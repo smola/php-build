@@ -3,7 +3,6 @@
 --with-zlib
 --with-zlib-dir=/usr
 --with-bz2
---enable-intl
 --with-openssl
 --enable-soap
 --enable-xmlreader
