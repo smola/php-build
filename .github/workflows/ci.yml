@@ -3,12 +3,15 @@ on:
   pull_request:
   push:
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         distro:
+          - 'centos:7'
           - 'centos:8'
+          - 'ubuntu:18.04'
           - 'ubuntu:20.04'
         php:
           - '5.2.17'
@@ -22,20 +25,26 @@ jobs:
           - '7.3.21'
           - '7.4.9'
         exclude:
-          - { distro: 'centos:8', php: '5.2.17'}
-          - { distro: 'centos:8', php: '5.3.29'}
-          - { distro: 'centos:8', php: '5.4.45'}
-          - { distro: 'centos:8', php: '5.5.38'} #FIXME: openssl 1.1.0
-          - { distro: 'ubuntu:20.04', php: '5.2.17'}
-          - { distro: 'ubuntu:20.04', php: '5.3.29'}
-          - { distro: 'ubuntu:20.04', php: '5.4.45'}
-          - { distro: 'ubuntu:20.04', php: '5.5.38'}
-          - { distro: 'ubuntu:20.04', php: '5.6.40'} #FIXME: curl-config
+          # libzip (0.10.1) on CentOS 7 is too old for PHP 7.3+ (required: >= 0.11)
+          - { distro: 'centos:7', php: '7.3.21'}
+          - { distro: 'centos:7', php: '7.4.9'}
         include:
-          - { distro: 'ubuntu:16.04', php: '5.3.29', openssl102: true}
-          - { distro: 'ubuntu:16.04', php: '5.4.45', openssl102: true}
-          - { distro: 'ubuntu:16.04', php: '5.5.38', openssl102: true}
-          - { distro: 'ubuntu:18.04', php: '5.6.40'}
+          - { distro: 'centos:7', php: '5.2.17', openssl102: true}
+          - { distro: 'centos:7', php: '5.3.29', openssl102: true}
+          - { distro: 'centos:7', php: '5.4.45', openssl102: true}
+          - { distro: 'centos:7', php: '5.5.38', openssl102: true}
+          - { distro: 'centos:8', php: '5.2.17', openssl102: true}
+          - { distro: 'centos:8', php: '5.3.29', openssl102: true}
+          - { distro: 'centos:8', php: '5.4.45', openssl102: true}
+          - { distro: 'centos:8', php: '5.5.38', openssl102: true}
+          - { distro: 'ubuntu:18.04', php: '5.2.17', openssl102: true}
+          - { distro: 'ubuntu:18.04', php: '5.3.29', openssl102: true}
+          - { distro: 'ubuntu:18.04', php: '5.4.45', openssl102: true}
+          - { distro: 'ubuntu:18.04', php: '5.5.38', openssl102: true}
+          - { distro: 'ubuntu:20.04', php: '5.2.17', openssl102: true}
+          - { distro: 'ubuntu:20.04', php: '5.3.29', openssl102: true}
+          - { distro: 'ubuntu:20.04', php: '5.4.45', openssl102: true}
+          - { distro: 'ubuntu:20.04', php: '5.5.38', openssl102: true}
     name: "test (php-${{ matrix.php }}, ${{ matrix.distro }})"
     container: "${{ matrix.distro }}"
     steps:
@@ -53,6 +62,44 @@ jobs:
         run: |
           set -ex
           if [ "${{ matrix.openssl102 }}" = "true" ]; then
+            export PHP_BUILD_CONFIGURE_OPTS="$PHP_BUILD_CONFIGURE_OPTS --with-openssl=/usr/local/opt/openssl@1.0"
+          fi
+          ./run-tests.sh ${{ matrix.php }}
+  test-macos:
+    runs-on: ${{ matrix.distro }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - '5.5.38'
+          - '5.6.40'
+          - '7.0.33'
+          - '7.1.33'
+          - '7.2.33'
+          - '7.3.21'
+          - '7.4.9'
+        distro:
+          - macos-10.15
+    name: "test (php-${{ matrix.php }}, ${{ matrix.distro }})"
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: |
+          set -ex
+          ./install-dependencies.sh
+          git clone --depth 1 https://github.com/sstephenson/bats.git
+          ./bats/install.sh "$HOME"
+          export PATH=$HOME/bin:$HOME/libexec:$PATH
+          bats --version
+          if [ "${{ matrix.openssl102 }}" = "true" ]; then
+            ./build-openssl-1.0.sh
+          fi
+      - name: run tests
+        run: |
+          set -ex
+          export PATH=$HOME/bin:$HOME/libexec:$PATH
+          if [ "${{ matrix.openssl102 }}" = "true" ]; then
+            export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.0/lib/pkgconfig"
             export PHP_BUILD_CONFIGURE_OPTS="$PHP_BUILD_CONFIGURE_OPTS --with-openssl=/usr/local/opt/openssl@1.0"
           fi
           ./run-tests.sh ${{ matrix.php }}
