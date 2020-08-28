@@ -392,6 +392,7 @@ function build_package() {
         MAKE_OUTPUT='4'
     fi
     cd "$source_path"
+    log "Building" "make -j $(num_cpu_cores) $PHP_BUILD_EXTRA_MAKE_ARGUMENTS"
     {
         make -j $(num_cpu_cores) $PHP_BUILD_EXTRA_MAKE_ARGUMENTS
         make install
@@ -745,6 +746,7 @@ $CONFIGURE_OPTIONS"
         export ac_cv_exeext=''
     fi
 
+    log "Configuring" "./configure $argv"
     ./configure $argv 1>&$CONFIGURE_OUTPUT
 
     # Use php-build prefix for the Apache libexec folder
