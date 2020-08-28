@@ -651,9 +651,15 @@ function configure_package() {
 
     # Override `--with-openssl` and `--with-libxml-dir`
     # if Homebrew's openssl and libxml2 exist on Mac OS X 10.11+.
-    if is_osx && [ "$(osx_major)" -eq 10 ] && [ "$(osx_minor)" -ge 11 ] && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix openssl)" ] && [ -e "$(brew --prefix libxml2)" ]; then
-        configure_option -R "--with-openssl" "$(brew --prefix openssl)"
-        configure_option -R "--with-libxml-dir" "$(brew --prefix libxml2)"
+    if is_osx && [ "$(osx_major)" -eq 10 ] && [ "$(osx_minor)" -ge 11 ] && [ -n "$(command -v brew)" ]; then
+        if [ -e "$(brew --prefix openssl)" ]; then
+            # openssl 1.1 on macOS requires using pkg-config (or patching)
+            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix openssl)/lib/pkgconfig"
+            configure_option -R "--with-openssl" "$(brew --prefix openssl)"
+        fi
+        if [ -e "$(brew --prefix libxml2)" ]; then
+            configure_option -R "--with-libxml-dir" "$(brew --prefix libxml2)"
+        fi
     fi
 
     if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix icu4c)" ]; then
