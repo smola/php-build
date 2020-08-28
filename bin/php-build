@@ -631,16 +631,18 @@ function configure_package() {
         fi
     } 1>&$CONFIGURE_OUTPUT
 
-    # Mac OSX stores some libraries (for example `libpng`)
-    # in `/usr/X11/lib` instead of `/usr/lib`.
-    #
-    # This currently builds PHP without the `gettext` and `readline`
-    # extensions, as I've currently not got them to work on my machine.
     if is_osx; then
+        # This currently builds PHP without the `gettext` and `readline`
+        # extensions, as I've currently not got them to work on my machine.
         configure_option -D "--with-gettext"
         configure_option -D "--with-readline"
         configure_option "--with-libedit"
+        if [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix libedit)" ]; then
+            configure_option -R "--with-libedit" "$(brew --prefix libedit)"
+        fi
 
+        # Mac OSX stores some libraries (for example `libpng`)
+        # in `/usr/X11/lib` instead of `/usr/lib`.
         configure_option -R "--with-png-dir" "/usr/X11"
     fi
 
@@ -660,6 +662,22 @@ function configure_package() {
         if [ -e "$(brew --prefix libxml2)" ]; then
             configure_option -R "--with-libxml-dir" "$(brew --prefix libxml2)"
         fi
+    fi
+
+    if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix bzip2)" ]; then
+        configure_option -R "--with-bz2" "$(brew --prefix bzip2)"
+    fi
+
+    if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix libiconv)" ]; then
+        configure_option -R "--with-iconv" "$(brew --prefix libiconv)"
+    fi
+
+    if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix tidy-html5)" ]; then
+        configure_option -R "--with-tidy" "$(brew --prefix tidy-html5)"
+    fi
+
+    if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix zlib)" ]; then
+        configure_option -R "--with-zlib" "$(brew --prefix zlib)"
     fi
 
     if is_osx && [ -n "$(command -v brew)" ] && [ -e "$(brew --prefix icu4c)" ]; then
