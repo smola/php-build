@@ -15,17 +15,21 @@ addons:
     update: true
   homebrew:
     packages:
+      - bzip2
       - icu4c
       - krb5
       - libedit
+      - libiconv
+      - libjpeg
       - libmcrypt
       - libxml2
       - libzip
-      - libjpeg
       - oniguruma
       - openssl
       - python
       - re2c
+      - tidy-html5
+      - zlib
     update: true
 
 matrix:
