@@ -1,3 +1,4 @@
+patch_file "php-7.0-oniguruma-2.3.1.patch"
 configure_option "--with-mcrypt" "/usr"
 configure_option "--with-gd"
 configure_option "--with-png-dir" "/usr"
