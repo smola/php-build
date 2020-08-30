@@ -1,0 +1,65 @@
+From c3660b2acb752d0f701b7702f82ac37566da4f3e Mon Sep 17 00:00:00 2001
+From: "Santiago M. Mola" <santi@mola.io>
+Date: Sun, 9 Aug 2020 17:04:10 +0200
+Subject: [PATCH] ext/intl: use pkg-config to detect icu
+
+icu-config is deprecated and not available in some distros anymore. This
+patch tries to setup icu with pkg-config first. It's a smaller patch
+than the original 20fa2e7b58c519cc148d9658456b695884b1ecf4 by Hugh
+McMaster. This one does not depend on the PKG_CHECK_MODULES macro so it
+is more suitable to patch PHP 7.0 and older.
+---
+ acinclude.m4 | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/acinclude.m4 b/acinclude.m4
+index 05cd8e3ead..e37e39108e 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -2221,6 +2221,35 @@ AC_DEFUN([PHP_SETUP_ICU],[
+ 
+   AC_MSG_CHECKING([for location of ICU headers and libraries])
+ 
++  dnl First try to find pkg-config
++  if test -z "$PKG_CONFIG"; then
++    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
++  fi
++
++  dnl If pkg-config is found try using it
++  if test "$PHP_ICU_DIR" = "DEFAULT" && test -x "$PKG_CONFIG" && $PKG_CONFIG --exists icu-uc icu-io icu-i18n; then
++    if $PKG_CONFIG --atleast-version=40 icu-uc; then
++      found_icu=yes
++      icu_version_full=`$PKG_CONFIG --modversion icu-uc`
++      ac_IFS=$IFS
++      IFS="."
++      set $icu_version_full
++      IFS=$ac_IFS
++      icu_version=`expr [$]1 \* 1000 + [$]2`
++      AC_MSG_RESULT([found $icu_version_full])
++
++      ICU_LIBS=`$PKG_CONFIG --libs icu-uc icu-io icu-i18n`
++      ICU_INCS="`$PKG_CONFIG --cflags-only-I icu-uc icu-io icu-i18n` -DU_USING_ICU_NAMESPACE=1"
++
++      AC_MSG_RESULT([found $ICU_VERSION])
++
++      PHP_EVAL_LIBLINE($ICU_LIBS, $1)
++      PHP_EVAL_INCLINE($ICU_INCS)
++    else
++      AC_MSG_ERROR([ICU version 4.0 or later required.])
++    fi
++  else
++
+   dnl Trust icu-config to know better what the install prefix is..
+   icu_install_prefix=`$ICU_CONFIG --prefix 2> /dev/null`
+   if test "$?" != "0" || test -z "$icu_install_prefix"; then
+@@ -2249,6 +2278,7 @@ AC_DEFUN([PHP_SETUP_ICU],[
+     PHP_EVAL_INCLINE($ICU_INCS)
+     PHP_EVAL_LIBLINE($ICU_LIBS, $1)
+   fi
++  fi
+ ])
+ 
+ dnl
+-- 
+2.28.0
+
