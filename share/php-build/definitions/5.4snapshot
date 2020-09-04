@@ -6,6 +6,7 @@ configure_option "--with-png-dir" "/usr"
 configure_option "--with-jpeg-dir" "/usr"
 configure_option "--enable-zip"
 
+patch_file "php-7.0-icu-config.patch"
 patch_file "php-5.4-curl-config.patch"
 
 install_package_from_github PHP-5.4
