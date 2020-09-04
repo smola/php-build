@@ -98,6 +98,7 @@ case $DISTRO in
 		brew bundle --file=- <<-EOS
 brew "autoconf"
 brew "autoconf@2.13"
+brew "bison"
 brew "bzip2"
 brew "icu4c"
 brew "libedit"

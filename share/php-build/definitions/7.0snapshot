@@ -5,6 +5,8 @@ configure_option "--with-png-dir" "/usr"
 configure_option "--with-jpeg-dir" "/usr"
 configure_option "--enable-zip"
 
+patch_file "php-7.0-tidy-html5.patch"
+patch_file "php-7.0-oniguruma681.patch"
 patch_file "php-7.0-icu-config.patch"
 
 install_package_from_github PHP-7.0
