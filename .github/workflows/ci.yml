@@ -66,4 +66,7 @@ jobs:
           if [ "${{ matrix.openssl102 }}" = "true" ]; then
             export PHP_BUILD_CONFIGURE_OPTS="$PHP_BUILD_CONFIGURE_OPTS --with-openssl=/usr/local/opt/openssl@1.0"
           fi
-          ./run-tests.sh ${{ matrix.php }}
+          if ! ./run-tests.sh ${{ matrix.php }}; then
+            cat /tmp/php-build.*.log
+            exit 1
+          fi
