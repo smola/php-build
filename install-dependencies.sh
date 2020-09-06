@@ -86,6 +86,7 @@ case $DISTRO in
 			openssl-devel \
 			patch \
 			pkgconf \
+			re2c \
 			readline-devel \
 			sqlite-devel \
 			zlib-devel
