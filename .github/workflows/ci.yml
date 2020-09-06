@@ -24,6 +24,7 @@ jobs:
           - '7.2.33'
           - '7.3.21'
           - '7.4.9'
+          - '8.0snapshot'
         exclude:
           # TODO: libmysqlclient-dev dependency
           - { distro: 'centos:7', php: '5.2.17'}
@@ -37,6 +38,7 @@ jobs:
           # libzip (0.10.1) on CentOS 7 is too old for PHP 7.3+ (required: >= 0.11)
           - { distro: 'centos:7', php: '7.3.21'}
           - { distro: 'centos:7', php: '7.4.9'}
+          - { distro: 'centos:7', php: '8.0snapshot'}
         include:
           - { distro: 'centos:8', php: '5.3.29', openssl102: true}
           - { distro: 'centos:8', php: '5.4.45', openssl102: true}
